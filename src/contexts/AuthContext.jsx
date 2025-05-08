@@ -36,6 +36,15 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Clear all auth state
+  const clearAuthState = () => {
+    setUser(null);
+    setProfile(null);
+    // Clear any cached auth data in localStorage for added security
+    localStorage.removeItem('supabase.auth.token');
+    console.log('Auth state cleared');
+  };
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
@@ -46,10 +55,14 @@ export function AuthProvider({ children }) {
         if (session?.user) {
           setUser(session.user);
           await fetchProfile(session.user.id);
+        } else {
+          // Ensure state is cleared if no session exists
+          clearAuthState();
         }
       } catch (err) {
         console.error('Error getting initial session:', err);
         setError(err.message);
+        clearAuthState();
       } finally {
         setLoading(false);
       }
@@ -59,13 +72,17 @@ export function AuthProvider({ children }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
-      setUser(session?.user || null);
-
-      if (session?.user) {
+      console.log('Auth state changed:', event, session ? 'User present' : 'No user');
+      
+      if (event === 'SIGNED_OUT') {
+        clearAuthState();
+        console.log('User signed out, auth state cleared');
+      } else if (session?.user) {
+        setUser(session.user);
         await fetchProfile(session.user.id);
+        console.log('User session updated');
       } else {
-        setProfile(null);
+        clearAuthState();
       }
 
       setLoading(false);
@@ -78,6 +95,7 @@ export function AuthProvider({ children }) {
 
   const signIn = async ({ email, password }) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -88,11 +106,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error signing in:', err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signInWithOAuth = async (provider) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithOAuth({ 
         provider,
         options: {
@@ -105,11 +126,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error(`Error signing in with ${provider}:`, err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signUp = async ({ email, password, options }) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -121,24 +145,46 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error signing up:', err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      console.log('Signing out user...');
+      setLoading(true);
+      
+      // First clear local state
+      clearAuthState();
+      
+      // Then tell Supabase to sign out (server-side)
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setUser(null);
-      setProfile(null);
+      
+      console.log('Sign out successful');
+      
+      // Force clear any lingering auth state
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      // Force refresh to ensure clean state
+      window.location.href = '/';
+      
       return { error: null };
     } catch (err) {
       console.error('Error signing out:', err);
+      // Still clear state even if there's an error
+      clearAuthState();
       return { error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const resetPassword = async (email) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -148,11 +194,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error resetting password:', err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateUser = async (updates) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.updateUser(updates);
       if (error) throw error;
       setUser(data.user);
@@ -160,6 +209,8 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error updating user:', err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -173,6 +224,11 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (updates) => {
     try {
+      if (!user) {
+        throw new Error('No authenticated user found. Please sign in first.');
+      }
+      
+      setLoading(true);
       // Add updated_at timestamp
       const updatedData = {
         ...updates,
@@ -192,17 +248,52 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('Error updating profile:', err);
       return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
   const refreshProfile = async () => {
     if (!user) return null;
-    return await fetchProfile(user.id);
+    setLoading(true);
+    try {
+      const profile = await fetchProfile(user.id);
+      setLoading(false);
+      return profile;
+    } catch (err) {
+      setLoading(false);
+      return null;
+    }
   };
 
   // Check if a user is confirmed (email verified)
   const isUserConfirmed = () => {
     return user?.confirmed_at || user?.email_confirmed_at;
+  };
+
+  // Helper method for debugging auth issues
+  const getAuthStatus = async () => {
+    const session = await supabase.auth.getSession();
+    const sessionStr = JSON.stringify(session);
+    console.log('Current auth status:', {
+      hasUser: !!user,
+      hasProfile: !!profile,
+      hasSession: !!session.data.session,
+      sessionDetails: sessionStr.substring(0, 100) + '...'
+    });
+    return {
+      hasUser: !!user,
+      hasProfile: !!profile,
+      hasSession: !!session.data.session
+    };
+  };
+
+  // Hard reset function for debugging purposes
+  const forceSignOut = async () => {
+    await supabase.auth.signOut();
+    clearAuthState();
+    localStorage.clear(); // Clear all localStorage
+    window.location.href = '/login'; // Hard redirect to login page
   };
 
   const value = {
@@ -212,6 +303,8 @@ export function AuthProvider({ children }) {
     signInWithOAuth,
     signUp,
     signOut,
+    forceSignOut, // Added for debugging
+    getAuthStatus, // Added for debugging
     resetPassword,
     updateUser,
     updatePassword,

@@ -1,14 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../config/supabase';
 import { RegistrationForm } from '../components/RegistrationForm';
 import { useAuth } from '../contexts/AuthContext';
+import { Alert, Box, Button } from '@mui/material';
+import { useDialog } from '../contexts/DialogContext';
 
 export default function StudentRegistration() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [shouldLogout, setShouldLogout] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, signOut, forceSignOut, user, profile } = useAuth();
+  const { showSnackbar } = useDialog();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      setCheckingAuth(true);
+      try {
+        // Check if there's an existing session
+        const { data } = await supabase.auth.getSession();
+        
+        if (data.session) {
+          setShouldLogout(true);
+          setError('You are currently logged in. Please log out before creating a new account.');
+        }
+      } catch (err) {
+        console.error('Error checking authentication:', err);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    
+    checkExistingAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await signOut();
+      setShouldLogout(false);
+      setError(null);
+    } catch (err) {
+      console.error('Logout failed:', err);
+      await forceSignOut();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (formData) => {
     setLoading(true);
@@ -16,6 +57,7 @@ export default function StudentRegistration() {
     
     // Track uploaded files for potential cleanup
     const uploadedFiles = [];
+    let newUserId = null;
     
     try {
       // Sign up with Supabase Auth
@@ -27,24 +69,54 @@ export default function StudentRegistration() {
             type: 'student',
             username: formData.email.split('@')[0],
             name: formData.name
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        // Provide more user-friendly error messages
+        if (authError.message.includes('email already')) {
+          throw new Error('This email is already registered. Please use a different email or try logging in.');
+        } else {
+          throw authError;
+        }
+      }
+
+      if (!authData.user) {
+        throw new Error('Registration failed. Please try again.');
+      }
+
+      newUserId = authData.user.id;
       
       // Wait briefly for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Waiting for profile creation...');
       
-      // Verify profile was created
-      const { data: profileData, error: profileCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', authData.user.id)
-        .single();
+      // More sophisticated waiting logic
+      let profileData = null;
+      let attempts = 0;
+      const maxAttempts = 5;
+      
+      while (!profileData && attempts < maxAttempts) {
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-      if (profileCheckError || !profileData) {
-        throw new Error('Profile creation failed. Please try again.');
+        const { data, error: profileCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', authData.user.id)
+          .single();
+          
+        if (data && !profileCheckError) {
+          profileData = data;
+          break;
+        }
+        
+        console.log(`Profile check attempt ${attempts}/${maxAttempts}...`);
+      }
+        
+      if (!profileData) {
+        throw new Error('Profile creation took too long. Please check your email and continue setup after verifying your account.');
       }
 
       // Upload documents to Supabase Storage
@@ -131,10 +203,26 @@ export default function StudentRegistration() {
 
       if (profileError) throw profileError;
 
-      navigate('/student-login', { 
-        state: { message: 'Registration successful! Please check your email to verify your account.' }
+      // Sign out after successful registration to avoid conflicts
+      await signOut();
+
+      // Show success message and navigate
+      showSnackbar({
+        message: 'Registration successful! Please check your email to verify your account.',
+        severity: 'success'
       });
+      
+      // Wait a moment before redirecting
+      setTimeout(() => {
+        navigate('/student-login');
+      }, 2000);
+
     } catch (err) {
+      console.error('Registration error:', err);
+      showSnackbar({
+        message: err.message || 'Registration failed. Please try again.',
+        severity: 'error'
+      });
       setError(err.message);
       
       // Clean up any uploaded files if profile creation fails
@@ -147,17 +235,64 @@ export default function StudentRegistration() {
           console.error('Failed to clean up uploaded files:', cleanupErr);
         }
       }
+      
+      // If user was created but later steps failed, we may want to clean up the user
+      // This is commented out because it's generally better to let the user try again
+      // rather than deleting their account, especially if they received a verification email
+      /*
+      if (newUserId) {
+        try {
+          // This would require admin privileges and is not typically available in client code
+          // Consider using a serverless function for this cleanup
+          console.log('User account was created but registration failed. Manual cleanup may be required.');
+        } catch (deleteErr) {
+          console.error('Failed to clean up user account:', deleteErr);
+        }
+      }
+      */
     } finally {
       setLoading(false);
     }
   };
 
+  if (checkingAuth) {
+    return <div>Checking authentication status...</div>;
+  }
+
   return (
-    <RegistrationForm
-      type="student"
-      onSubmit={handleSubmit}
-      loading={loading}
-      error={error}
-    />
+    <>
+      {shouldLogout && (
+        <Box sx={{ mb: 3 }}>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleLogout}
+            disabled={loading}
+            fullWidth
+          >
+            {loading ? 'Logging out...' : 'Log Out and Continue'}
+          </Button>
+        </Box>
+      )}
+      
+      {!shouldLogout && (
+        <>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          <RegistrationForm
+            type="student"
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
+          />
+        </>
+      )}
+    </>
   );
 }

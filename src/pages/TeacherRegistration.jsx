@@ -3,22 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../config/supabase';
 import { RegistrationForm } from '../components/RegistrationForm';
 import { useAuth } from '../contexts/AuthContext';
+import { useDialog } from '../contexts/DialogContext';
 
 export default function TeacherRegistration() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { signUp } = useAuth();
+  const { showSnackbar } = useDialog();
 
   const handleSubmit = async (formData) => {
     setLoading(true);
     setError(null);
     
-    // Track uploaded files for potential cleanup
     const uploadedFiles = [];
     
     try {
-      // Sign up with Supabase Auth
       const { data: authData, error: authError } = await signUp({
         email: formData.email,
         password: formData.password,
@@ -65,7 +65,6 @@ export default function TeacherRegistration() {
 
             if (uploadError) throw uploadError;
             
-            // Get the public URL for the file
             const { data: urlData } = supabase.storage
               .from('teacher-documents')
               .getPublicUrl(fileName);
@@ -74,13 +73,11 @@ export default function TeacherRegistration() {
             uploadedFiles.push(fileName);
           } catch (uploadErr) {
             console.error(`Error uploading ${key}:`, uploadErr);
-            // Continue with other files instead of breaking the whole registration
             documentUrls[key] = null;
           }
         }
       }
 
-      // Parse subjects into array
       const subjects = typeof formData.subjects === 'string' ? 
         formData.subjects
           .split(',')
@@ -88,7 +85,6 @@ export default function TeacherRegistration() {
           .filter(subject => subject.length > 0)
         : formData.subjects || [];
 
-      // Parse experience into JSON format
       const experience = [
         {
           institution: formData.institution || '',
@@ -98,7 +94,6 @@ export default function TeacherRegistration() {
         }
       ];
 
-      // Parse qualifications into JSON format
       const qualifications = [
         {
           degree: formData.qualification || '',
@@ -131,12 +126,23 @@ export default function TeacherRegistration() {
 
       if (profileError) throw profileError;
 
-      navigate('/teacher-login', { 
-        state: { 
-          message: 'Registration successful! Please check your email to verify your account.' 
-        }
+      // Show success message
+      showSnackbar({
+        message: 'Registration successful! Please check your email to verify your account.',
+        severity: 'success'
       });
+      
+      // Wait a moment before redirecting
+      setTimeout(() => {
+        navigate('/teacher-login');
+      }, 2000);
+
     } catch (err) {
+      console.error('Registration error:', err);
+      showSnackbar({
+        message: err.message || 'Registration failed. Please try again.',
+        severity: 'error'
+      });
       setError(err.message);
       
       // Clean up any uploaded files if profile creation fails
