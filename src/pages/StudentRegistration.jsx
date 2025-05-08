@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../config/supabase';
 import { RegistrationForm } from '../components/RegistrationForm';
 import { useAuth } from '../contexts/AuthContext';
-import { Alert, Box, Button } from '@mui/material';
+import { Alert, Box, Button, Typography, Paper, CircularProgress } from '@mui/material';
 import { useDialog } from '../contexts/DialogContext';
+import { CheckCircle, Error } from '@mui/icons-material';
 
 export default function StudentRegistration() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [shouldLogout, setShouldLogout] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState(null); // 'success', 'error', or null
+  const [statusMessage, setStatusMessage] = useState('');
   const navigate = useNavigate();
   const { signUp, signOut, forceSignOut, user, profile } = useAuth();
   const { showSnackbar } = useDialog();
@@ -37,6 +40,20 @@ export default function StudentRegistration() {
     checkExistingAuth();
   }, []);
 
+  // Handle redirect after successful registration
+  useEffect(() => {
+    let redirectTimer;
+    if (registrationStatus === 'success') {
+      redirectTimer = setTimeout(() => {
+        navigate('/student-login');
+      }, 5000); // Longer timeout to let user read the success message
+    }
+    
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
+  }, [registrationStatus, navigate]);
+
   const handleLogout = async () => {
     setLoading(true);
     try {
@@ -54,6 +71,7 @@ export default function StudentRegistration() {
   const handleSubmit = async (formData) => {
     setLoading(true);
     setError(null);
+    setRegistrationStatus(null);
     
     // Track uploaded files for potential cleanup
     const uploadedFiles = [];
@@ -89,10 +107,9 @@ export default function StudentRegistration() {
 
       newUserId = authData.user.id;
       
-      // Wait briefly for the trigger to create the profile
+      // Wait for profile creation
       console.log('Waiting for profile creation...');
       
-      // More sophisticated waiting logic
       let profileData = null;
       let attempts = 0;
       const maxAttempts = 5;
@@ -119,43 +136,40 @@ export default function StudentRegistration() {
         throw new Error('Profile creation took too long. Please check your email and continue setup after verifying your account.');
       }
 
-      // Upload documents to Supabase Storage
+      // Handle passport photo upload (the only required document)
       const documentUrls = {};
-      if (formData.documents) {
-        for (const [key, file] of Object.entries(formData.documents)) {
-          if (!file) continue;
+      const passportPhoto = formData.documents?.photo;
+      
+      if (passportPhoto) {
+        try {
+          // Simplify the file path
+          const fileName = `${authData.user.id}/photo-${passportPhoto.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           
-          try {
-            // Simplify the file path
-            const fileName = `${authData.user.id}/${key}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-            
-            console.log("Uploading file:", fileName);
-            
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('student-documents')
-              .upload(fileName, file, {
-                cacheControl: '3600',
-                upsert: true  // Changed to true to avoid conflicts
-              });
+          console.log("Uploading passport photo:", fileName);
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('student-documents')
+            .upload(fileName, passportPhoto, {
+              cacheControl: '3600',
+              upsert: true
+            });
 
-            if (uploadError) {
-              console.error("Upload error:", uploadError);
-              throw uploadError;
-            }
-            
-            // Get the public URL for the file
-            const { data: urlData } = supabase.storage
-              .from('student-documents')
-              .getPublicUrl(fileName);
-              
-            documentUrls[key] = urlData.publicUrl;
-            uploadedFiles.push(fileName);
-            
-          } catch (uploadErr) {
-            console.error(`Error uploading ${key}:`, uploadErr);
-            // Continue with other files instead of breaking the whole registration
-            documentUrls[key] = null;
+          if (uploadError) {
+            console.error("Photo upload error:", uploadError);
+            throw uploadError;
           }
+          
+          // Get the public URL for the file
+          const { data: urlData } = supabase.storage
+            .from('student-documents')
+            .getPublicUrl(fileName);
+            
+          documentUrls.photo = urlData.publicUrl;
+          uploadedFiles.push(fileName);
+          
+        } catch (uploadErr) {
+          console.error(`Error uploading passport photo:`, uploadErr);
+          documentUrls.photo = null;
         }
       }
 
@@ -196,6 +210,7 @@ export default function StudentRegistration() {
             phone: formData.emergencyContactPhone,
             relation: formData.emergencyContactRelation
           },
+          photo: documentUrls.photo, // Set photo URL directly in profile
           document_urls: documentUrls,
           updated_at: new Date()
         })
@@ -206,23 +221,29 @@ export default function StudentRegistration() {
       // Sign out after successful registration to avoid conflicts
       await signOut();
 
-      // Show success message and navigate
+      // Set success status
+      setRegistrationStatus('success');
+      setStatusMessage('Registration successful! Please check your email to verify your account before logging in.');
+      
+      // Also show the snackbar for immediate feedback
       showSnackbar({
-        message: 'Registration successful! Please check your email to verify your account.',
+        message: 'Registration successful! Please check your email.',
         severity: 'success'
       });
-      
-      // Wait a moment before redirecting
-      setTimeout(() => {
-        navigate('/student-login');
-      }, 2000);
 
     } catch (err) {
       console.error('Registration error:', err);
+      
+      // Set error status
+      setRegistrationStatus('error');
+      setStatusMessage(err.message || 'Registration failed. Please try again.');
+      
+      // Show error in snackbar
       showSnackbar({
         message: err.message || 'Registration failed. Please try again.',
         severity: 'error'
       });
+      
       setError(err.message);
       
       // Clean up any uploaded files if profile creation fails
@@ -235,28 +256,74 @@ export default function StudentRegistration() {
           console.error('Failed to clean up uploaded files:', cleanupErr);
         }
       }
-      
-      // If user was created but later steps failed, we may want to clean up the user
-      // This is commented out because it's generally better to let the user try again
-      // rather than deleting their account, especially if they received a verification email
-      /*
-      if (newUserId) {
-        try {
-          // This would require admin privileges and is not typically available in client code
-          // Consider using a serverless function for this cleanup
-          console.log('User account was created but registration failed. Manual cleanup may be required.');
-        } catch (deleteErr) {
-          console.error('Failed to clean up user account:', deleteErr);
-        }
-      }
-      */
     } finally {
       setLoading(false);
     }
   };
 
+  // Show status screen after registration attempt
+  const renderStatusScreen = () => {
+    if (registrationStatus === 'success') {
+      return (
+        <Paper elevation={3} sx={{ p: 4, textAlign: 'center', maxWidth: 600, mx: 'auto', mt: 4 }}>
+          <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h5" gutterBottom>Registration Successful!</Typography>
+          <Typography variant="body1" paragraph>
+            {statusMessage}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Redirecting to login page in 5 seconds...
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 3 }}
+            onClick={() => navigate('/student-login')}
+          >
+            Go to Login
+          </Button>
+        </Paper>
+      );
+    } else if (registrationStatus === 'error') {
+      return (
+        <Paper elevation={3} sx={{ p: 4, textAlign: 'center', maxWidth: 600, mx: 'auto', mt: 4 }}>
+          <Error color="error" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h5" gutterBottom>Registration Failed</Typography>
+          <Typography variant="body1" paragraph>
+            {statusMessage}
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 3 }}
+            onClick={() => {
+              setRegistrationStatus(null);
+              setError(null);
+            }}
+          >
+            Try Again
+          </Button>
+        </Paper>
+      );
+    }
+    
+    return null;
+  };
+
   if (checkingAuth) {
-    return <div>Checking authentication status...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress size={40} />
+        <Typography variant="body1" sx={{ ml: 2 }}>
+          Checking authentication status...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // If registration is complete (success or error), show the status screen
+  if (registrationStatus) {
+    return renderStatusScreen();
   }
 
   return (
@@ -290,6 +357,8 @@ export default function StudentRegistration() {
             onSubmit={handleSubmit}
             loading={loading}
             error={error}
+            // This indicates to the form component that only passport photo is required
+            requiredDocuments={['photo']} 
           />
         </>
       )}

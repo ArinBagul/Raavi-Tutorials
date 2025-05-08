@@ -17,6 +17,7 @@ import * as Yup from 'yup';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 const phoneRegExp = /^[0-9]{10}$/;
 
@@ -75,6 +76,7 @@ export function RegistrationForm({
   onSubmit,
   loading,
   error,
+  requiredDocuments = [],
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -381,65 +383,47 @@ export function RegistrationForm({
               </Typography>
               <Grid container spacing={2}>
                 {type === 'student' ? (
-                  <>
-                    <Grid item xs={12} sm={6}>
-                      <Button
-                        component="label"
-                        variant="outlined"
-                        startIcon={<CloudUploadIcon />}
-                        sx={{ width: '100%', height: '56px' }}
-                      >
-                        {documents.reportCard ? 'Report Card Uploaded' : 'Upload Last Report Card'}
-                        <input
-                          type="file"
-                          hidden
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('reportCard', e)}
+                  // Student document - Only Passport Photo
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      component="label"
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<PhotoCameraIcon />}
+                      sx={{ 
+                        width: '100%', 
+                        height: '56px',
+                        borderWidth: '2px',
+                        borderStyle: 'dashed'
+                      }}
+                    >
+                      {documents.photo ? 'Photo Uploaded' : 'Upload Passport Size Photo *'}
+                      <input
+                        type="file"
+                        hidden
+                        accept=".jpg,.jpeg,.png"
+                        onChange={(e) => handleFileUpload('photo', e)}
+                      />
+                    </Button>
+                    {uploadProgress.photo && (
+                      <Box sx={{ position: 'relative', mt: 1, display: 'flex', alignItems: 'center' }}>
+                        <CircularProgress
+                          variant="determinate"
+                          value={uploadProgress.photo}
+                          size={24}
+                          color="success"
                         />
-                      </Button>
-                      {uploadProgress.reportCard && (
-                        <Box sx={{ position: 'relative', mt: 1 }}>
-                          <CircularProgress
-                            variant="determinate"
-                            value={uploadProgress.reportCard}
-                            size={24}
-                          />
-                          <Typography variant="caption" sx={{ ml: 1 }}>
-                            {uploadProgress.reportCard}%
-                          </Typography>
-                        </Box>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Button
-                        component="label"
-                        variant="outlined"
-                        startIcon={<CloudUploadIcon />}
-                        sx={{ width: '100%', height: '56px' }}
-                      >
-                        {documents.idProof ? 'ID Proof Uploaded' : 'Upload ID Proof'}
-                        <input
-                          type="file"
-                          hidden
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('idProof', e)}
-                        />
-                      </Button>
-                      {uploadProgress.idProof && (
-                        <Box sx={{ position: 'relative', mt: 1 }}>
-                          <CircularProgress
-                            variant="determinate"
-                            value={uploadProgress.idProof}
-                            size={24}
-                          />
-                          <Typography variant="caption" sx={{ ml: 1 }}>
-                            {uploadProgress.idProof}%
-                          </Typography>
-                        </Box>
-                      )}
-                    </Grid>
-                  </>
+                        <Typography variant="caption" sx={{ ml: 1 }}>
+                          {uploadProgress.photo === 100 ? 'Upload Complete' : `${uploadProgress.photo}%`}
+                        </Typography>
+                      </Box>
+                    )}
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                      Please upload a recent passport-sized photograph with a plain background.
+                    </Typography>
+                  </Grid>
                 ) : (
+                  // Teacher documents
                   <>
                     <Grid item xs={12} sm={6}>
                       <Button
@@ -497,6 +481,34 @@ export function RegistrationForm({
                         </Box>
                       )}
                     </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Button
+                        component="label"
+                        variant="outlined"
+                        startIcon={<PhotoCameraIcon />}
+                        sx={{ width: '100%', height: '56px' }}
+                      >
+                        {documents.photo ? 'Photo Uploaded' : 'Upload Passport Photo'}
+                        <input
+                          type="file"
+                          hidden
+                          accept=".jpg,.jpeg,.png"
+                          onChange={(e) => handleFileUpload('photo', e)}
+                        />
+                      </Button>
+                      {uploadProgress.photo && (
+                        <Box sx={{ position: 'relative', mt: 1 }}>
+                          <CircularProgress
+                            variant="determinate"
+                            value={uploadProgress.photo}
+                            size={24}
+                          />
+                          <Typography variant="caption" sx={{ ml: 1 }}>
+                            {uploadProgress.photo}%
+                          </Typography>
+                        </Box>
+                      )}
+                    </Grid>
                   </>
                 )}
               </Grid>
@@ -508,10 +520,15 @@ export function RegistrationForm({
                 fullWidth
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={loading || (type === 'student' && !documents.photo)}
               >
                 {loading ? 'Registering...' : 'Register'}
               </Button>
+              {type === 'student' && !documents.photo && (
+                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+                  Please upload a passport size photograph to continue
+                </Typography>
+              )}
             </Grid>
 
             <Grid item xs={12}>
