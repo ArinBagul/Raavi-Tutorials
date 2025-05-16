@@ -42,13 +42,19 @@ function Home() {
       >
         <Container maxWidth="sm">
           <Typography
-            component="h1"
-            variant="h2"
-            color="text.primary"
-            gutterBottom
-          >
-            Welcome to Raavi Tutorials
-          </Typography>
+  component="h1"
+  variant="h2"
+  gutterBottom
+  sx={{
+    background: 'linear-gradient(90deg, #E20188 0%, #002661 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    fontWeight: 'bold', // Optional, for better visual impact
+  }}
+>
+  Welcome to Raavi Tutorials
+</Typography>
+
           <Typography variant="h5" color="text.secondary" paragraph>
             Expert home tuition and career counseling services in Indore, Bhopal, Dhar, Khargone, and surrounding areas.
           </Typography>

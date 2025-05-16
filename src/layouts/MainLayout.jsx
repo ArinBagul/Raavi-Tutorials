@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import { useState } from "react";
+import { Outlet, Link as RouterLink, useLocation } from "react-router-dom";
 import {
   AppBar,
   Box,
@@ -20,32 +20,28 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
-import ContactMailIcon from '@mui/icons-material/ContactMail';
-import SchoolIcon from '@mui/icons-material/School';
-import LoginIcon from '@mui/icons-material/Login';
-import { useAuth } from '../contexts/AuthContext';
-import { useDialog } from '../contexts/DialogContext';
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
+import InfoIcon from "@mui/icons-material/Info";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
+import SchoolIcon from "@mui/icons-material/School";
+import LoginIcon from "@mui/icons-material/Login";
+import { useAuth } from "../contexts/AuthContext";
+import { useDialog } from "../contexts/DialogContext";
+
+import RaaviLogoWhite from "../assets/RaaviLogo-White.png";
 
 const pages = [
-  { name: 'Home', path: '/', icon: <HomeIcon /> },
-  { name: 'About', path: '/about', icon: <InfoIcon /> },
-  { name: 'Contact', path: '/contact', icon: <ContactMailIcon /> },
+  { name: "Home", path: "/", icon: <HomeIcon /> },
+  { name: "About", path: "/about", icon: <InfoIcon /> },
+  { name: "Contact", path: "/contact", icon: <ContactMailIcon /> },
 ];
 
 const userTypePages = {
-  student: [
-    { name: 'Student Dashboard', path: '/student-dashboard' },
-  ],
-  teacher: [
-    { name: 'Teacher Dashboard', path: '/teacher-dashboard' },
-  ],
-  admin: [
-    { name: 'Admin Panel', path: '/admin-panel' },
-  ],
+  student: [{ name: "Student Dashboard", path: "/student-dashboard" }],
+  teacher: [{ name: "Teacher Dashboard", path: "/teacher-dashboard" }],
+  admin: [{ name: "Admin Panel", path: "/admin-panel" }],
 };
 
 export function MainLayout() {
@@ -78,19 +74,19 @@ export function MainLayout() {
 
   const handleSignOut = () => {
     showConfirm({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out?',
+      title: "Sign Out",
+      message: "Are you sure you want to sign out?",
       onConfirm: async () => {
         const { error } = await signOut();
         if (error) {
           showSnackbar({
-            message: 'Error signing out. Please try again.',
-            severity: 'error',
+            message: "Error signing out. Please try again.",
+            severity: "error",
           });
         } else {
           showSnackbar({
-            message: 'Successfully signed out',
-            severity: 'success',
+            message: "Successfully signed out",
+            severity: "success",
           });
         }
       },
@@ -100,21 +96,18 @@ export function MainLayout() {
   const getUserMenu = () => {
     if (!user) {
       return [
-        { name: 'Student Login', path: '/student-login' },
-        { name: 'Teacher Login', path: '/teacher-login' },
-        { name: 'Admin Login', path: '/admin-login' },
+        { name: "Student Login", path: "/student-login" },
+        { name: "Teacher Login", path: "/teacher-login" },
+        { name: "Admin Login", path: "/admin-login" },
       ];
     }
 
     const userSpecificPages = userTypePages[profile?.type] || [];
-    return [
-      ...userSpecificPages,
-      { name: 'Sign Out', onClick: handleSignOut },
-    ];
+    return [...userSpecificPages, { name: "Sign Out", onClick: handleSignOut }];
   };
 
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
       <Typography variant="h6" sx={{ my: 2 }}>
         Raavi Tutorials
       </Typography>
@@ -137,32 +130,30 @@ export function MainLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <AppBar position="static">
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Logo - Desktop */}
-            <SchoolIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-            <Typography
-              variant="h6"
-              noWrap
+            <Link
               component={RouterLink}
               to="/"
               sx={{
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
                 mr: 2,
-                display: { xs: 'none', md: 'flex' },
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
               }}
             >
-              RAAVI
-            </Typography>
+              <Box
+                component="img"
+                src={RaaviLogoWhite}
+                alt="Raavi Logo"
+                sx={{ height: 55 , width: 100 }} // Adjust height as needed
+              />
+            </Link>
 
             {/* Mobile Menu */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
               <IconButton
                 size="large"
                 aria-label="menu"
@@ -176,28 +167,26 @@ export function MainLayout() {
             </Box>
 
             {/* Logo - Mobile */}
-            <SchoolIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-            <Typography
-              variant="h5"
-              noWrap
+            <Link
               component={RouterLink}
               to="/"
               sx={{
                 mr: 2,
-                display: { xs: 'flex', md: 'none' },
+                display: { xs: "flex", md: "none" },
                 flexGrow: 1,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
+                alignItems: "center",
               }}
             >
-              RAAVI
-            </Typography>
+              <Box
+                component="img"
+                src={RaaviLogoWhite}
+                alt="Raavi Logo"
+                sx={{ height: 70 , width: 130 }} // Smaller height for mobile
+              />
+            </Link>
 
             {/* Desktop Menu */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {pages.map((page) => (
                 <Button
                   key={page.name}
@@ -206,9 +195,9 @@ export function MainLayout() {
                   onClick={handleCloseNavMenu}
                   sx={{
                     my: 2,
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
                     gap: 1,
                   }}
                 >
@@ -229,17 +218,17 @@ export function MainLayout() {
                   </IconButton>
                 </Tooltip>
                 <Menu
-                  sx={{ mt: '45px' }}
+                  sx={{ mt: "45px" }}
                   id="menu-appbar"
                   anchorEl={anchorElUser}
                   anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                   keepMounted
                   transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
@@ -251,7 +240,7 @@ export function MainLayout() {
                         handleCloseUserMenu();
                         item.onClick ? item.onClick() : null;
                       }}
-                      component={item.path ? RouterLink : 'li'}
+                      component={item.path ? RouterLink : "li"}
                       to={item.path}
                     >
                       <Typography textAlign="center">{item.name}</Typography>
@@ -260,7 +249,7 @@ export function MainLayout() {
                 </Menu>
               </Box>
             ) : (
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="outlined"
                   color="inherit"
@@ -294,8 +283,8 @@ export function MainLayout() {
           keepMounted: true, // Better open performance on mobile
         }}
         sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: 240 },
         }}
       >
         {drawer}
@@ -306,7 +295,7 @@ export function MainLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          bgcolor: 'background.default',
+          bgcolor: "background.default",
         }}
       >
         <Outlet />
@@ -318,26 +307,26 @@ export function MainLayout() {
         sx={{
           py: 3,
           px: 2,
-          mt: 'auto',
+          mt: "auto",
           backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
+            theme.palette.mode === "light"
               ? theme.palette.grey[200]
               : theme.palette.grey[800],
         }}
       >
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
-            {'© '}
+            {"© "}
             <Link
               color="inherit"
               component={RouterLink}
               to="/"
-              sx={{ textDecoration: 'none' }}
+              sx={{ textDecoration: "none" }}
             >
               Raavi Tutorials
-            </Link>{' '}
+            </Link>{" "}
             {new Date().getFullYear()}
-            {'. All rights reserved.'}
+            {". All rights reserved."}
           </Typography>
         </Container>
       </Box>
