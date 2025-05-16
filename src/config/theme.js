@@ -55,6 +55,11 @@ export const theme = createTheme({
       secondary: '#495057',
       disabled: '#ADB5BD',
     },
+    custom: {
+    gradients: {
+      primary: 'linear-gradient(90deg, #E20188 0%, #002661 100%)',
+    },
+  },
   },
   typography: {
     fontFamily: "'Poppins', 'Inter', 'Nunito', sans-serif",

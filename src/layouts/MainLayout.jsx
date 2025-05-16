@@ -131,7 +131,13 @@ export function MainLayout() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        sx={{
+          background: "linear-gradient(90deg, #E20188 0%, #002661 100%)",
+          boxShadow: "none", // Optional: for a flat look
+        }}
+      >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Logo - Desktop */}
@@ -148,7 +154,7 @@ export function MainLayout() {
                 component="img"
                 src={RaaviLogoWhite}
                 alt="Raavi Logo"
-                sx={{ height: 55 , width: 100 }} // Adjust height as needed
+                sx={{ height: 55, width: 100 }} // Adjust height as needed
               />
             </Link>
 
@@ -181,7 +187,7 @@ export function MainLayout() {
                 component="img"
                 src={RaaviLogoWhite}
                 alt="Raavi Logo"
-                sx={{ height: 70 , width: 130 }} // Smaller height for mobile
+                sx={{ height: 70, width: 130 }} // Smaller height for mobile
               />
             </Link>
 
