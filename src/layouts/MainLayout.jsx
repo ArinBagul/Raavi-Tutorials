@@ -159,7 +159,7 @@ export function MainLayout() {
             </Link>
 
             {/* Mobile Menu */}
-            <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+            {/* <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
               <IconButton
                 size="large"
                 aria-label="menu"
@@ -170,7 +170,7 @@ export function MainLayout() {
               >
                 <MenuIcon />
               </IconButton>
-            </Box>
+            </Box> */}
 
             {/* Logo - Mobile */}
             <Link
@@ -187,7 +187,7 @@ export function MainLayout() {
                 component="img"
                 src={RaaviLogoWhite}
                 alt="Raavi Logo"
-                sx={{ height: 70, width: 130 }} // Smaller height for mobile
+                sx={{ height: 55, width: 100 }} // Smaller height for mobile
               />
             </Link>
 
