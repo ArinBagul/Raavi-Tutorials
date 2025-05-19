@@ -21,12 +21,12 @@ const contactInfo = [
   {
     icon: <EmailIcon fontSize="large" />,
     title: 'Email',
-    content: 'info@ravihometutorials.com',
+    content: 'raavitutorialsindore@gmail.com',
   },
   {
     icon: <PhoneIcon fontSize="large" />,
     title: 'Phone',
-    content: '+91 1234567890',
+    content: '+91 9575772317',
   },
   {
     icon: <LocationOnIcon fontSize="large" />,
