@@ -30,7 +30,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import { useAuth } from "../contexts/AuthContext";
 import { useDialog } from "../contexts/DialogContext";
 
-import RaaviLogoWhite from "../assets/RaaviLogo-White.png";
+import RaaviLogoWhite from "../assets/raavi-logo-white.png";
 
 const pages = [
   { name: "Home", path: "/", icon: <HomeIcon /> },
@@ -154,12 +154,12 @@ export function MainLayout() {
                 component="img"
                 src={RaaviLogoWhite}
                 alt="Raavi Logo"
-                sx={{ height: 55, width: 100 }} // Adjust height as needed
+                sx={{ height: 45 }} // Adjust height as needed
               />
             </Link>
 
             {/* Mobile Menu */}
-            {/* <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
               <IconButton
                 size="large"
                 aria-label="menu"
@@ -170,7 +170,7 @@ export function MainLayout() {
               >
                 <MenuIcon />
               </IconButton>
-            </Box> */}
+            </Box>
 
             {/* Logo - Mobile */}
             <Link
@@ -187,7 +187,7 @@ export function MainLayout() {
                 component="img"
                 src={RaaviLogoWhite}
                 alt="Raavi Logo"
-                sx={{ height: 55, width: 100 }} // Smaller height for mobile
+                sx={{ height: 35 }} // Smaller height for mobile
               />
             </Link>
 
@@ -265,14 +265,14 @@ export function MainLayout() {
                 >
                   Login
                 </Button>
-                <Button
+                {/* <Button
                   variant="contained"
                   color="secondary"
                   component={RouterLink}
                   to="/student-registration"
                 >
                   Register
-                </Button>
+                </Button> */}
               </Box>
             )}
           </Toolbar>
