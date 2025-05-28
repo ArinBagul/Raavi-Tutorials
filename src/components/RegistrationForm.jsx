@@ -332,6 +332,27 @@ export function RegistrationForm({
                     helperText={touched.parentPhone && errors.parentPhone}
                   />
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Board"
+                    name="board" 
+                  />
+                  </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Subject"
+                    name="subject" 
+                  />
+                  </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Suitable Time and Days"
+                    name="suitableTimeDays" 
+                  />
+                  </Grid>
               </>
             ) : (
               // Teacher-specific fields
@@ -373,6 +394,20 @@ export function RegistrationForm({
                     helperText={touched.subjects && errors.subjects}
                   />
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Parents Name"
+                    name="parentsName" 
+                  />
+                  </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Suitable Time and Days"
+                    name="suitableTimeDays" 
+                  />
+                  </Grid>
               </>
             )}
 
