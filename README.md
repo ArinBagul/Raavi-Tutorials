@@ -1,7 +1,7 @@
 # Raavi Tutorials – Website Development Brief
 
 **Website Name**: Raavi Tutorials  
-**Domain**: [ravihometutorials.com](http://ravihometutorials.com)  
+**Domain**: [raavihometutorials.com](https://raavitutorials.com/)  
 **Tech Stack**: React.js + Supabase
 
 ---
