@@ -19,12 +19,15 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 const features = [
   "Expert tutors for all subjects and grades",
   "Personalized attention and customized learning plans",
-  "Flexible scheduling and home tutoring options",
-  "Regular progress tracking and feedback",
+  "Flexible scheduling",
+  "Regular Progress tracking and feedback through DTD learning Modules and Test Series",
   "Preparation for competitive exams and Olympiads",
   "Special focus on building conceptual understanding",
   "Safe and comfortable learning environment",
   "Affordable fee structure with flexible payment options",
+  "Free to Choose Male/Female Tutor according to requirement ",
+  "Always ready to accept your suggestions to improve us for your kids",
+  "Last but not least – We don’t believe in syllabus but have strong team for your ward’s bright marksheet"
 ];
 
 const keyHighlights = [
@@ -32,25 +35,25 @@ const keyHighlights = [
     icon: <SchoolIcon fontSize="large" color="primary" />,
     title: "Comprehensive Education",
     description:
-      "From Pre-Nursery to Post-Graduation across multiple boards including CBSE, ICSE, IB, and State boards",
+      "From Pre-Nursery to Post-Graduation across multiple boards including CBSE, ICSE, IB, and State boards .",
   },
   {
     icon: <GroupIcon fontSize="large" color="primary" />,
     title: "Expert Faculty",
     description:
-      "Qualified and experienced teachers who are passionate about education and student success",
+      "We supply Qualified and experienced tutors trained by  our special designed Faculty Development program. Who are passionate about education and all over development.",
   },
   {
     icon: <LocationOnIcon fontSize="large" color="primary" />,
     title: "Wide Coverage",
     description:
-      "Serving students in Indore, Bhopal, Dhar, Khargone, and surrounding areas",
+      "Serving students in Indore, Bhopal, Dewas, Ujjain, Khargone, Barwani districts and Surrounding areas .",
   },
   {
     icon: <EmojiEventsIcon fontSize="large" color="primary" />,
     title: "Beyond Academics",
     description:
-      "Support for Olympiads, Spell Bee, and extracurricular activities like Music, Dance, and Languages",
+      "Special Classes , guidance and Support for Abacus, Vedic Mathematics, Public Speaking, Hand writing, Olympiads, Spell Bee  and Other extracurricular activities like Classical /Western Music, Classical Classical /Western dance, and Indian/ Foreign Languages.",
   },
 ];
 
@@ -74,20 +77,17 @@ function About() {
           </Typography>
 
           <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-            Building Strong Academic Foundations Since 2010
+            Building Strong Academic Foundation Since 2014
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Raavi Home Tutorials is dedicated to providing high-quality
-            education through personalized attention and expert guidance. Our
-            mission is to build strong academic foundations while nurturing
-            confidence, skills, and lifelong learning habits.
+            Raavi Home Tutorials is dedicated to providing high- quality education through personal attention and expert guidance. Since last 10 years we are building strong academic foundation while nurturing confidence, skills and lifelong learnings. We are committed to delivering a transformative educational experience—where creativity, innovation, and personalized strategies make every student’s journey to take fly to the sky.
           </Typography>
         </Box>
 
         {/* Key Highlights */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
           {keyHighlights.map((highlight, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Grid item xs={12} sm={6} md={6} key={index}>
               <Card
                 sx={{
                   height: "100%",
@@ -152,12 +152,7 @@ function About() {
             Our Mission
           </Typography>
           <Typography variant="body1" paragraph align="center">
-            At Raavi Tutorials, we believe every student has unique potential
-            waiting to be unlocked. Our mission is to provide personalized
-            education that not only helps students excel academically but also
-            develops critical thinking, creativity, and confidence. We strive to
-            create a supportive learning environment where students can grow,
-            explore, and achieve their full potential.
+            Raavi Tutorials believes that every Child has unique potential waiting to be unlocked. Our mission is to create a supportive educational community where students, parents, and tutors work together to empower students with the knowledge, skills, and confidence they need to achieve academic excellence to unlock their academic potential and inspiration to personal as well as social growth.
           </Typography>
           <Typography variant="h6" align="center" color="primary.main">
             "Education is not preparation for life; education is life itself."

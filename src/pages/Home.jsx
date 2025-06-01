@@ -4,27 +4,39 @@ import SchoolIcon from '@mui/icons-material/School';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CastForEducationIcon from '@mui/icons-material/CastForEducation';
+import PsychologyIcon from '@mui/icons-material/Psychology'; // For Career Guidance
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'; // For Edu-venture Services
 
 const serviceCards = [
   {
-    title: 'Academic Classes',
-    description: 'Pre-Nursery to Class 12 with personalized attention and expert guidance',
+    title: 'Academics',
+    description: 'Pre Nursery to Higher Education with personal attention and expert guidance.',
     icon: <SchoolIcon fontSize="large" />,
   },
   {
-    title: 'Primary Education',
-    description: 'Classes 1-10: Hindi, English, Maths, Science, SST, Sanskrit, Computer, GK',
+    title: 'Primary to Secondary Education',
+    description: 'Pre Nursery to Sr KG : Skill activities, Phonetics, Mathematics (With Abacus and Vedic), Hand Writing, Public Speaking etc. 1 to 12th : All subjects, All Languages, Skill activities, Phonetics, Mathematics ( With Abacus and Vedic ), Hand Writing, Public Speaking and G.K.',
     icon: <AutoStoriesIcon fontSize="large" />,
   },
   {
     title: 'Higher Education',
-    description: 'Classes 11-12: Physics, Chemistry, Biology, Mathematics, Commerce subjects',
+    description: 'All subjects according to NEP with all activities, One to One Career guidance sessions for Higher Education ',
     icon: <MenuBookIcon fontSize="large" />,
   },
   {
     title: 'Multiple Boards',
-    description: 'CBSE, ICSE, ISC, IB, IGCSE, NIOS, and State Boards',
+    description: 'CBSE, ICSE, ISC, IGCSE, NIOS and State Boards.',
     icon: <CastForEducationIcon fontSize="large" />,
+  },
+  {
+    title: 'Career Guidance',
+    description: 'One to One Career Counseling sessions for Subject selection, Higher Education in India and abroad with Placement Consultancy. DMIT and Biometric test for Career analysis.',
+    icon: <PsychologyIcon fontSize="large" />,
+  },
+  {
+    title: 'Edu-venture Services ',
+    description: ' FDP, FTP and SMS Services for PAN India. ',
+    icon: <BusinessCenterIcon fontSize="large" />,
   },
 ];
 
@@ -56,7 +68,7 @@ function Home() {
 </Typography>
 
           <Typography variant="h5" color="text.secondary" paragraph>
-            Expert home tuition and career counseling services in Indore, Bhopal, Dhar, Khargone, and surrounding areas.
+            Expert Home Tuition and Career Counseling services in Indore, Bhopal, Ujjain, Dewas , Dhar, Khargone, Khandwa,  Barwani  Districts and  surrounding areas. With Technology-Enhanced Learning.
           </Typography>
           <Box sx={{ mt: 4 }}>
             <Grid container spacing={2} justifyContent="center">
@@ -98,7 +110,7 @@ function Home() {
         </Typography>
         <Grid container spacing={4} sx={{ mt: 2 }}>
           {serviceCards.map((card, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
+            <Grid item key={index} xs={12} sm={6} md={4}>
               <Card
                 sx={{
                   height: '100%',
